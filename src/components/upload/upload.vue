@@ -22,7 +22,8 @@
             v-if="showUploadList"
             :files="fileList"
             @on-file-remove="handleRemove"
-            @on-file-preview="handlePreview"></upload-list>
+            @on-file-preview="handlePreview"
+            @on-abort="handleAjax"></upload-list>
     </div>
 </template>
 <script>
@@ -106,6 +107,12 @@
                     return {};
                 }
             },
+            onAbort: {
+                type: Function,
+                default () {
+                    return {};
+                }
+            },
             onRemove: {
                 type: Function,
                 default () {
@@ -154,7 +161,8 @@
                 prefixCls: prefixCls,
                 dragOver: false,
                 fileList: [],
-                tempIndex: 1
+                tempIndex: 1,
+                ajaxStack: []
             };
         },
         computed: {
@@ -250,7 +258,7 @@
                 let formData = new FormData();
                 formData.append(this.name, file);
 
-                ajax({
+                const rq = ajax({
                     headers: this.headers,
                     withCredentials: this.withCredentials,
                     file: file,
@@ -265,8 +273,13 @@
                     },
                     onError: (err, response) => {
                         this.handleError(err, response, file);
+                    },
+                    onAbort: () => {
+                        this.handleAbort(file);
                     }
                 });
+                rq.uid = file.uid;
+                this.ajaxStack.push(rq);
             },
             handleStart (file) {
                 file.uid = Date.now() + this.tempIndex++;
@@ -320,6 +333,9 @@
 
                 this.onError(err, response, file);
             },
+            handleAbort (file) {
+                this.onAbort(file);
+            },
             handleRemove(file) {
                 const fileList = this.fileList;
                 fileList.splice(fileList.indexOf(file), 1);
@@ -329,6 +345,13 @@
                 if (file.status === 'finished') {
                     this.onPreview(file);
                 }
+            },
+            handleAjax(file) {
+                this.ajaxStack.forEach(item => {
+                    if (item.uid === file.uid) {
+                        item.abort();
+                    }
+                });
             },
             clearFiles() {
                 this.fileList = [];

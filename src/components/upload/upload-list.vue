@@ -12,6 +12,10 @@
                 :class="[prefixCls + '-list-remove']"
                 v-show="file.status === 'finished'"
                 @click.native="handleRemove(file)"></Icon>
+            <Icon
+                type="ios-close"
+                v-show="file.status === 'uploading'"
+                @click.native="handleAbort(file)"></Icon>
             <transition name="fade">
                 <i-progress
                     v-if="file.showProgress"
@@ -60,6 +64,9 @@
             },
             handleRemove (file) {
                 this.$emit('on-file-remove', file);
+            },
+            handleAbort (file) {
+                this.$emit('on-abort', file);
             },
             format (file) {
                 const format = file.name.split('.').pop().toLocaleLowerCase() || '';

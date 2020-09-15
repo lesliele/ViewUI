@@ -61,6 +61,10 @@ export default function upload(option) {
         option.onSuccess(getBody(xhr));
     };
 
+    xhr.onabort = function () {
+        option.onAbort();
+    }
+
     xhr.open('post', action, true);
 
     if (option.withCredentials && 'withCredentials' in xhr) {
@@ -79,4 +83,5 @@ export default function upload(option) {
         }
     }
     xhr.send(formData);
+    return xhr;
 }
