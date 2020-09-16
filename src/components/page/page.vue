@@ -239,12 +239,12 @@
             }
         },
         methods: {
-            changePage (page) {
+            changePage (page, preventChange = false) {
                 if (this.disabled) return;
                 if (this.currentPage != page) {
                     this.currentPage = page;
                     this.$emit('update:current', page);
-                    this.$emit('on-change', page);
+                    if (!preventChange) this.$emit('on-change', page);
                 }
             },
             prev () {
@@ -285,7 +285,7 @@
                 if (this.disabled) return;
                 this.currentPageSize = pageSize;
                 this.$emit('on-page-size-change', pageSize);
-                this.changePage(1);
+                this.changePage(1, true);
             },
             onPage (page) {
                 if (this.disabled) return;
